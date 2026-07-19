@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="IMG/logo.png">
+    <title>ECC</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-fondo: #0f0f0f;
+            --color-texto: #ffffff;
+            --color-texto-suave: rgba(255, 255, 255, 0.5);
+            --color-texto-tenue: rgba(255, 255, 255, 0.35);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                "Segoe UI", Roboto, Arial, sans-serif;
+            padding: 2rem;
+            background-color: var(--color-fondo);
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo {
+            position: absolute;
+            top: 0.1rem;
+            left: 0.1rem;
+            width: 10rem;
+            max-width: 40vw;
+            height: auto;
+        }
+
+        /* ---------- Selector de color ---------- */
+        .selector-color {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+        }
+
+        .boton-color {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, 0.4),
+                0 6px 18px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.2s ease, transform 0.15s ease;
+        }
+
+        .boton-color:hover {
+            background-color: rgba(255, 255, 255, 0.14);
+            transform: scale(1.05);
+        }
+
+        .boton-color svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            stroke: var(--color-texto);
+            transition: stroke 0.3s ease;
+        }
+
+        .paleta {
+            position: absolute;
+            top: 3.5rem;
+            right: 0;
+            display: none;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.6rem;
+            padding: 1rem;
+            border-radius: 1.1rem;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, 0.4),
+                0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .paleta.abierta {
+            display: grid;
+        }
+
+        .swatch {
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+
+        .swatch:hover {
+            transform: scale(1.15);
+        }
+
+        .swatch.activo {
+            border-color: #ffffff;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }
+
+        /* ---------- Contenido ---------- */
+        .contenido {
+            width: 35vw;
+            min-width: 20rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .titulo {
+            color: var(--color-texto);
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            margin-bottom: 1rem;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+
+        .caja-texto {
+            position: relative;
+            width: 100%;
+        }
+
+        /* Caja de texto: cristal más marcado, estilo Apple */
+        textarea {
+            width: 100%;
+            min-height: 9rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            padding: 1.25rem 1.5rem 1.25rem 1.25rem;
+            font-family: inherit;
+            color: var(--color-texto);
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 1.25rem;
+            resize: none;
+            outline: none;
+            backdrop-filter: blur(28px) saturate(160%);
+            -webkit-backdrop-filter: blur(28px) saturate(160%);
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, 0.4),
+                0 8px 24px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            transition: box-shadow 0.25s ease, border-color 0.25s ease,
+                background-color 0.25s ease, color 0.3s ease;
+
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        textarea::-webkit-scrollbar {
+            display: none;
+        }
+
+        textarea::placeholder {
+            color: var(--color-texto-tenue);
+            transition: color 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: rgba(255, 255, 255, 0.35);
+            background-color: rgba(255, 255, 255, 0.14);
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, 0.4),
+                0 8px 28px rgba(0, 0, 0, 0.45),
+                0 0 0 4px rgba(255, 255, 255, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .scrollbar-pista {
+            position: absolute;
+            top: 0.75rem;
+            bottom: 0.75rem;
+            right: 0.4rem;
+            width: 0.4rem;
+            border-radius: 999px;
+            pointer-events: none;
+        }
+
+        .scrollbar-thumb {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            border-radius: 999px;
+            background-color: rgba(255, 255, 255, 0.25);
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            opacity: 0;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .scrollbar-thumb.visible {
+            opacity: 1;
+        }
+
+        .scrollbar-thumb:hover,
+        .scrollbar-thumb.arrastrando {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .contadores {
+            margin-top: 0.75rem;
+            display: flex;
+            gap: 1.25rem;
+            font-size: 0.85rem;
+            color: var(--color-texto-suave);
+            letter-spacing: 0.01em;
+            transition: color 0.3s ease;
+        }
+
+        .contadores strong {
+            color: var(--color-texto);
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .copyright {
+            position: fixed;
+            bottom: 0.75rem;
+            right: 1rem;
+            font-size: 0.7rem;
+            color: var(--color-texto-tenue);
+            transition: color 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <img src="IMG/logo.png" alt="Logo" class="logo">
+
+    <!-- Selector de color -->
+    <div class="selector-color">
+        <button class="boton-color" id="botonColor" aria-label="Elegir color de fondo" type="button">
+            <!-- Icono de pincel (genérico) -->
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 6l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 9l4.37-4.37a1 1 0 0 0 0-1.41l-1.59-1.59a1 1 0 0 0-1.41 0Z" />
+                <path d="M9 8c-2 3-4 3.5-7 4l8 8c.5-3 1-5 4-7" />
+                <path d="M14.5 17.5 4.5 20.5" />
+            </svg>
+        </button>
+
+        <div class="paleta" id="paleta">
+            <div class="swatch activo" style="background:#0f0f0f" data-color="#0f0f0f"></div>
+            <div class="swatch" style="background:#1c1c1e" data-color="#1c1c1e"></div>
+            <div class="swatch" style="background:#2c2c2e" data-color="#2c2c2e"></div>
+            <div class="swatch" style="background:#3a3a3c" data-color="#3a3a3c"></div>
+            <div class="swatch" style="background:#0a3d62" data-color="#0a3d62"></div>
+            <div class="swatch" style="background:#1e3a5f" data-color="#1e3a5f"></div>
+            <div class="swatch" style="background:#3d0a3d" data-color="#3d0a3d"></div>
+            <div class="swatch" style="background:#3d1a0a" data-color="#3d1a0a"></div>
+            <div class="swatch" style="background:#0a3d1f" data-color="#0a3d1f"></div>
+            <div class="swatch" style="background:#3d0a0a" data-color="#3d0a0a"></div>
+            <div class="swatch" style="background:#fdf6b2" data-color="#fdf6b2" data-texto="#000000"></div>
+            <div class="swatch" style="background:#7b113a" data-color="#7b113a"></div>
+            <div class="swatch" style="background:#da7756" data-color="#da7756" data-texto="#000000"></div>
+            <div class="swatch" style="background:#f7c6d9" data-color="#f7c6d9" data-texto="#000000"></div>
+            <div class="swatch" style="background:#ffffff" data-color="#ffffff" data-texto="#000000"></div>
+        </div>
+    </div>
+
+    <div class="contenido">
+        <p class="titulo">Contador de Caracteres Oficial de Eterion</p>
+
+        <div class="caja-texto">
+            <textarea id="texto" placeholder="Escribe aquí..."></textarea>
+            <div class="scrollbar-pista">
+                <div class="scrollbar-thumb" id="scrollThumb"></div>
+            </div>
+        </div>
+
+        <div class="contadores">
+            <p>Caracteres: <strong id="numCaracteres">0</strong></p>
+            <p>Palabras: <strong id="numPalabras">0</strong></p>
+        </div>
+    </div>
+
+    <p class="copyright">© 2026 Eterion - Todos los derechos reservados.</p>
+
+    <script>
+        // Variables
+        const textarea = document.getElementById('texto');
+        const numCaracteres = document.getElementById('numCaracteres');
+        const numPalabras = document.getElementById('numPalabras');
+        const thumb = document.getElementById('scrollThumb');
+
+        // --- Contadores ---
+        function actualizarContadores() {
+            const texto = textarea.value;
+            numCaracteres.textContent = texto.length;
+
+            const palabras = texto.trim().length === 0 ? 0 : texto.trim().split(/\s+/).length;
+            numPalabras.textContent = palabras;
+        }
+        textarea.addEventListener('keyup', actualizarContadores);
+        textarea.addEventListener('input', actualizarContadores);
+
+        // --- Scrollbar falsa ---
+        function actualizarThumb() {
+            const { scrollHeight, clientHeight, scrollTop } = textarea;
+            const hayScroll = scrollHeight > clientHeight + 1;
+
+            thumb.classList.toggle('visible', hayScroll);
+            if (!hayScroll) return;
+
+            const alturaPista = thumb.parentElement.clientHeight;
+            const alturaThumb = Math.max((clientHeight / scrollHeight) * alturaPista, 24);
+            const posibleDesplazamiento = alturaPista - alturaThumb;
+            const progreso = scrollTop / (scrollHeight - clientHeight);
+
+            thumb.style.height = alturaThumb + 'px';
+            thumb.style.top = progreso * posibleDesplazamiento + 'px';
+        }
+
+        textarea.addEventListener('input', actualizarThumb);
+        textarea.addEventListener('scroll', actualizarThumb);
+        window.addEventListener('resize', actualizarThumb);
+
+        // --- Arrastrar el thumb con el ratón ---
+        let arrastrando = false;
+        let offsetInicial = 0;
+
+        thumb.addEventListener('mousedown', (e) => {
+            arrastrando = true;
+            thumb.classList.add('arrastrando');
+            offsetInicial = e.clientY - thumb.getBoundingClientRect().top;
+            e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!arrastrando) return;
+
+            const pista = thumb.parentElement;
+            const rectPista = pista.getBoundingClientRect();
+            const alturaPista = pista.clientHeight;
+            const alturaThumb = thumb.clientHeight;
+
+            let nuevaPos = e.clientY - rectPista.top - offsetInicial;
+            nuevaPos = Math.max(0, Math.min(nuevaPos, alturaPista - alturaThumb));
+
+            const progreso = nuevaPos / (alturaPista - alturaThumb);
+            textarea.scrollTop = progreso * (textarea.scrollHeight - textarea.clientHeight);
+        });
+
+        window.addEventListener('mouseup', () => {
+            arrastrando = false;
+            thumb.classList.remove('arrastrando');
+        });
+
+        actualizarThumb();
+
+        // --- Selector de color ---
+        const botonColor = document.getElementById('botonColor');
+        const paleta = document.getElementById('paleta');
+        const swatches = document.querySelectorAll('.swatch');
+        const raiz = document.documentElement;
+
+        botonColor.addEventListener('click', (e) => {
+            paleta.classList.toggle('abierta');
+            e.stopPropagation();
+        });
+
+        swatches.forEach((swatch) => {
+            swatch.addEventListener('click', () => {
+                const color = swatch.dataset.color;
+                const textoOscuro = swatch.dataset.texto === '#000000';
+
+                raiz.style.setProperty('--color-fondo', color);
+
+                if (textoOscuro) {
+                    raiz.style.setProperty('--color-texto', '#000000');
+                    raiz.style.setProperty('--color-texto-suave', 'rgba(0, 0, 0, 0.55)');
+                    raiz.style.setProperty('--color-texto-tenue', 'rgba(0, 0, 0, 0.4)');
+                } else {
+                    raiz.style.setProperty('--color-texto', '#ffffff');
+                    raiz.style.setProperty('--color-texto-suave', 'rgba(255, 255, 255, 0.5)');
+                    raiz.style.setProperty('--color-texto-tenue', 'rgba(255, 255, 255, 0.35)');
+                }
+
+                swatches.forEach((s) => s.classList.remove('activo'));
+                swatch.classList.add('activo');
+
+                paleta.classList.remove('abierta');
+            });
+        });
+
+        // Cerrar la paleta al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!paleta.contains(e.target) && e.target !== botonColor) {
+                paleta.classList.remove('abierta');
+            }
+        });
+    </script>
+</body>
+</html>
